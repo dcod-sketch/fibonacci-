@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="피보나치매수계획">
+<title>피보나치매수계획</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0e1a;
+    --surface: #111827;
+    --surface2: #1a2235;
+    --border: #1e2d45;
+    --accent: #3b82f6;
+    --accent2: #10b981;
+    --accent3: #f59e0b;
+    --text: #e2e8f0;
+    --text2: #94a3b8;
+    --text3: #4a5568;
+    --red: #ef4444;
+    --input-bg: #0d1525;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Noto Sans KR', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 0;
+  }
+
+  /* Header */
+  .header {
+    background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%);
+    padding: 20px 16px 16px;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .header h1 {
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    color: #fff;
+  }
+
+  .header h1 span {
+    color: var(--accent);
+  }
+
+  .header-sub {
+    font-size: 11px;
+    color: var(--text2);
+    margin-top: 2px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* Controls */
+  .controls {
+    padding: 16px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .control-row {
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+  }
+
+  .control-group {
+    flex: 1;
+  }
+
+  .control-group label {
+    display: block;
+    font-size: 11px;
+    color: var(--text2);
+    margin-bottom: 6px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  .control-group input {
+    width: 100%;
+    background: var(--input-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    color: var(--text);
+    font-size: 15px;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .control-group input:focus {
+    border-color: var(--accent);
+  }
+
+  /* Stage selector */
+  .stage-selector {
+    display: flex;
+    gap: 6px;
+    margin-top: 12px;
+  }
+
+  .stage-btn {
+    flex: 1;
+    padding: 8px 4px;
+    background: var(--input-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text2);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'Noto Sans KR', sans-serif;
+  }
+
+  .stage-btn.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+
+  .stage-label {
+    font-size: 11px;
+    color: var(--text2);
+    margin-bottom: 6px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  /* Summary bar */
+  .summary {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+    background: var(--border);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .summary-item {
+    background: var(--surface2);
+    padding: 12px 16px;
+    text-align: center;
+  }
+
+  .summary-item .s-label {
+    font-size: 10px;
+    color: var(--text2);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+  }
+
+  .summary-item .s-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--accent2);
+  }
+
+  .summary-item .s-value.blue { color: var(--accent); }
+  .summary-item .s-value.amber { color: var(--accent3); }
+
+  /* Table */
+  .table-wrap {
+    overflow-x: auto;
+    padding: 0;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    min-width: 600px;
+  }
+
+  thead tr {
+    background: var(--surface2);
+    border-bottom: 2px solid var(--accent);
+  }
+
+  thead th {
+    padding: 10px 8px;
+    text-align: center;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--text2);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+  }
+
+  thead th:first-child { text-align: center; }
+
+  tbody tr {
+    border-bottom: 1px solid var(--border);
+    transition: background 0.15s;
+  }
+
+  tbody tr:nth-child(even) { background: rgba(255,255,255,0.02); }
+  tbody tr.inactive { opacity: 0.25; }
+  tbody tr.active-row { background: rgba(59,130,246,0.05); }
+
+  td {
+    padding: 10px 8px;
+    text-align: center;
+    vertical-align: middle;
+  }
+
+  .td-stage {
+    font-weight: 700;
+    font-size: 11px;
+    color: var(--text2);
+  }
+
+  .td-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 500;
+  }
+
+  .td-ratio { color: var(--accent); }
+  .td-cum-ratio { color: var(--text2); }
+  .td-amount { color: var(--text); font-weight: 600; }
+  .td-cum { color: var(--text2); }
+  .td-qty { color: var(--accent2); }
+
+  /* Editable cells */
+  .td-edit {
+    position: relative;
+  }
+
+  .td-edit input {
+    width: 90px;
+    background: var(--input-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 5px 6px;
+    color: var(--text);
+    font-size: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    text-align: center;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .td-edit input:focus {
+    border-color: var(--accent);
+    background: #0a1628;
+  }
+
+  .td-edit input.date-input {
+    width: 100px;
+  }
+
+  .td-note input {
+    width: 100px;
+  }
+
+  /* ABP section */
+  .abp-section {
+    background: var(--surface2);
+    border-top: 2px solid var(--accent3);
+    padding: 14px 16px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .abp-item .abp-label {
+    font-size: 10px;
+    color: var(--text2);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+  }
+
+  .abp-item .abp-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--accent3);
+  }
+
+  .abp-item .abp-value.green { color: var(--accent2); }
+
+  /* Footer */
+  .footer {
+    padding: 16px;
+    text-align: center;
+    font-size: 10px;
+    color: var(--text3);
+    border-top: 1px solid var(--border);
+  }
+
+  /* Reset button */
+  .reset-btn {
+    display: block;
+    width: calc(100% - 32px);
+    margin: 12px 16px;
+    padding: 12px;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text2);
+    font-size: 13px;
+    cursor: pointer;
+    font-family: 'Noto Sans KR', sans-serif;
+    transition: all 0.2s;
+  }
+
+  .reset-btn:hover { border-color: var(--red); color: var(--red); }
+
+  /* Progress bar */
+  .progress-wrap {
+    padding: 0 16px 12px;
+    background: var(--surface);
+  }
+
+  .progress-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+    color: var(--text2);
+    margin-bottom: 5px;
+  }
+
+  .progress-bar {
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 2px;
+    transition: width 0.4s ease;
+  }
+
+  @media (max-width: 400px) {
+    table { min-width: 580px; }
+    .td-edit input { width: 80px; }
+  }
+
+  /* Zoom buttons */
+  .zoom-bar {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 6px;
+    padding: 6px 16px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+  }
+  .zoom-label {
+    font-size: 11px;
+    color: var(--text2);
+    margin-right: 4px;
+  }
+  .zoom-btn {
+    width: 32px;
+    height: 32px;
+    background: var(--input-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font-size: 18px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: monospace;
+    transition: all 0.15s;
+    line-height: 1;
+  }
+  .zoom-btn:active { background: var(--accent); border-color: var(--accent); }
+  .zoom-pct {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--text2);
+    min-width: 36px;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>피보나치<span>매수계획</span></h1>
+  <div class="header-sub">Fibonacci DCA Calculator</div>
+</div>
+
+<div class="controls">
+  <div class="control-row">
+    <div class="control-group">
+      <label>총 매수금액 (원)</label>
+      <input type="number" id="totalAmount" value="1000000" inputmode="numeric" placeholder="금액 입력"
+        oninput="render()" onblur="render()">
+    </div>
+    <button onclick="render()" style="padding:10px 16px;background:var(--accent);border:none;border-radius:8px;color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;white-space:nowrap;height:42px;align-self:flex-end;">계산 ▶</button>
+  </div>
+  <div style="margin-top:12px">
+    <div class="stage-label">단계 수 선택</div>
+    <div class="stage-selector">
+      <button class="stage-btn" data-n="3" onclick="setStages(3)">3단계</button>
+      <button class="stage-btn" data-n="4" onclick="setStages(4)">4단계</button>
+      <button class="stage-btn active" data-n="5" onclick="setStages(5)">5단계</button>
+      <button class="stage-btn" data-n="6" onclick="setStages(6)">6단계</button>
+    </div>
+  </div>
+</div>
+
+<div class="zoom-bar">
+  <span class="zoom-label">화면 크기</span>
+  <button class="zoom-btn" onclick="changeZoom(-10)">−</button>
+  <span class="zoom-pct" id="zoomPct">100%</span>
+  <button class="zoom-btn" onclick="changeZoom(10)">+</button>
+</div>
+
+<div class="progress-wrap">
+  <div class="progress-label">
+    <span>매수 진행률</span>
+    <span id="progressText">0 / 5 단계</span>
+  </div>
+  <div class="progress-bar">
+    <div class="progress-fill" id="progressFill" style="width:0%"></div>
+  </div>
+</div>
+
+<div class="summary">
+  <div class="summary-item">
+    <div class="s-label">총 매수금액</div>
+    <div class="s-value blue" id="sumTotal">1,000,000</div>
+  </div>
+  <div class="summary-item">
+    <div class="s-label">총 매수수량</div>
+    <div class="s-value" id="sumQty">-</div>
+  </div>
+</div>
+
+<div class="table-wrap">
+  <table id="mainTable">
+    <thead>
+      <tr>
+        <th>단계</th>
+        <th>비율</th>
+        <th>누적비율</th>
+        <th>매수금액</th>
+        <th>누적합계</th>
+        <th>매수가격</th>
+        <th>매수수량</th>
+        <th>매수일자</th>
+        <th>비고</th>
+      </tr>
+    </thead>
+    <tbody id="tableBody"></tbody>
+  </table>
+</div>
+
+<div class="abp-section">
+  <div class="abp-item">
+    <div class="abp-label">가중평균매수가 (ABP)</div>
+    <div class="abp-value" id="abpValue">미입력</div>
+  </div>
+  <div class="abp-item">
+    <div class="abp-label">실제 매수총액</div>
+    <div class="abp-value green" id="realTotal">미입력</div>
+  </div>
+</div>
+
+<button class="reset-btn" onclick="resetPrices()">입력값 초기화</button>
+
+<div class="footer">
+  ※ 투자 권유가 아닌 계획 도구입니다. 실제 투자는 본인 판단으로 하세요.
+</div>
+
+<script>
+  const FIB = [1, 2, 3, 5, 8, 13];
+  const DENOM = {3:6, 4:11, 5:19, 6:32};
+
+  let stages = 5;
+  let prices = {};
+  let dates = {};
+  let notes = {};
+
+  function setStages(n) {
+    stages = n;
+    document.querySelectorAll('.stage-btn').forEach(b => {
+      b.classList.toggle('active', parseInt(b.dataset.n) === n);
+    });
+    render();
+  }
+
+  function fmt(n) {
+    if (isNaN(n) || n === null || n === undefined) return '-';
+    return Math.round(n).toLocaleString('ko-KR');
+  }
+
+  function fmtDec(n, d=2) {
+    if (isNaN(n) || n === null) return '-';
+    return n.toFixed(d);
+  }
+
+  function render() {
+    const total = parseFloat(document.getElementById('totalAmount').value) || 0;
+    const denom = DENOM[stages];
+    const tbody = document.getElementById('tableBody');
+    tbody.innerHTML = '';
+
+    let cumRatio = 0;
+    let cumAmt = 0;
+
+    for (let i = 0; i < stages; i++) {
+      const ratio = FIB[i] / denom;
+      cumRatio += ratio;
+      const amt = Math.round(total * ratio);
+      cumAmt += amt;
+      const price = prices[i] || '';
+      const qty = price ? amt / price : null;
+
+      const tr = document.createElement('tr');
+      tr.className = price ? 'active-row' : '';
+
+      tr.innerHTML = `
+        <td class="td-stage td-num">${i+1}단계</td>
+        <td class="td-ratio td-num">${(ratio*100).toFixed(2)}%</td>
+        <td class="td-cum-ratio td-num">${(cumRatio*100).toFixed(2)}%</td>
+        <td class="td-amount td-num">${fmt(amt)}</td>
+        <td class="td-cum td-num">${fmt(cumAmt)}</td>
+        <td class="td-edit">
+          <input type="number" inputmode="numeric" placeholder="가격" value="${price}"
+            oninput="setPrice(${i}, this.value)"
+            onblur="setPrice(${i}, this.value)"
+            onkeyup="setPrice(${i}, this.value)">
+        </td>
+        <td class="td-qty td-num">${qty ? fmtDec(qty) : '-'}</td>
+        <td class="td-edit">
+          <input type="text" class="date-input" placeholder="날짜" value="${dates[i]||''}"
+            oninput="setDate(${i}, this.value)"
+            onblur="setDate(${i}, this.value)">
+        </td>
+        <td class="td-edit td-note">
+          <input type="text" placeholder="메모" value="${notes[i]||''}"
+            oninput="setNote(${i}, this.value)"
+            onblur="setNote(${i}, this.value)">
+        </td>
+      `;
+      tbody.appendChild(tr);
+    }
+
+    updateSummary(total);
+    updateProgress();
+    document.getElementById('sumTotal').textContent = fmt(total);
+  }
+
+  function setPrice(i, v) {
+    prices[i] = parseFloat(v) || '';
+    const total = parseFloat(document.getElementById('totalAmount').value) || 0;
+    const denom = DENOM[stages];
+    const amt = Math.round(total * FIB[i] / denom);
+    const price = prices[i];
+    const qty = price ? amt / price : null;
+    const rows = document.querySelectorAll('#tableBody tr');
+    if (rows[i]) {
+      rows[i].className = price ? 'active-row' : '';
+      const qtyCell = rows[i].querySelectorAll('td')[6];
+      if (qtyCell) qtyCell.textContent = qty ? fmtDec(qty) : '-';
+    }
+    updateSummary(total);
+    updateProgress();
+  }
+
+  function setDate(i, v) { dates[i] = v; }
+  function setNote(i, v) { notes[i] = v; }
+
+  function updateSummary(total) {
+    const denom = DENOM[stages];
+    let totalQty = 0;
+    let weightedSum = 0;
+    let investedAmt = 0;
+    let realTotal = 0;
+
+    for (let i = 0; i < stages; i++) {
+      const ratio = FIB[i] / denom;
+      const amt = Math.round(total * ratio);
+      const price = prices[i];
+      if (price) {
+        const qty = amt / price;
+        totalQty += qty;
+        weightedSum += amt * price;
+        investedAmt += amt;
+        realTotal += qty * price;
+      }
+    }
+
+    document.getElementById('sumQty').textContent = investedAmt > 0 ? fmtDec(totalQty) : '-';
+
+    const abp = investedAmt > 0 ? investedAmt / totalQty : null;
+    document.getElementById('abpValue').textContent = abp ? fmt(abp) + '원' : '미입력';
+    document.getElementById('realTotal').textContent = realTotal > 0 ? fmt(realTotal) + '원' : '미입력';
+  }
+
+  function updateProgress() {
+    const filled = Object.values(prices).filter(p => p && p > 0).length;
+    const pct = stages > 0 ? (filled / stages * 100) : 0;
+    document.getElementById('progressFill').style.width = pct + '%';
+    document.getElementById('progressText').textContent = `${filled} / ${stages} 단계`;
+  }
+
+  function resetPrices() {
+    if (confirm('입력된 매수가격, 날짜, 메모를 모두 초기화할까요?')) {
+      prices = {}; dates = {}; notes = {};
+      render();
+    }
+  }
+
+  document.getElementById('totalAmount').addEventListener('input', render);
+
+  render();
+
+  let zoomLevel = 100;
+  function changeZoom(delta) {
+    zoomLevel = Math.min(150, Math.max(60, zoomLevel + delta));
+    document.getElementById('zoomPct').textContent = zoomLevel + '%';
+    document.querySelector('.table-wrap').style.fontSize = (zoomLevel / 100) + 'rem';
+    document.querySelector('.table-wrap').style.zoom = zoomLevel + '%';
+  }
+
+</script>
+</body>
+</html>
